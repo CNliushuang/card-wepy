@@ -1,0 +1,179 @@
+<style lang="less">
+page{
+  width: 100%;
+  height: 100%;
+  background: #f1f1f1;
+}
+.clearfix{ zoom:1;}
+.clearfix:after {display: block; content: ''; clear: both; }
+.container {
+  height: 100%;
+  box-sizing: border-box;
+}
+</style>
+
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+
+import { setStore } from 'wepy-redux'
+import configStore from './store'
+
+const store = configStore()
+setStore(store)
+
+export default class extends wepy.app {
+  config = {
+    pages: [
+      'pages/index',//首页
+      'pages/productList',//选择产品列表
+      'pages/editHome',//编辑主页
+      'pages/selectProduct',//选择产品
+      'pages/editPost',//编辑公告
+      'pages/example',//公告位示例
+      'pages/resume',//个人简介
+      'pages/editCompany',//编辑企业简介
+      'pages/editResume',//编辑个人履历
+      'pages/auth',//授权
+      'pages/model',//车型详情
+      'pages/series',//车系详情
+    ],
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#474747',
+      navigationBarTitleText: '个人电子名片',
+      navigationBarTextStyle: 'white'
+    }
+  }
+
+  globalData = {
+    userInfo: null,
+    token:"",
+    plat:"wechat",
+    server:"https://card.vnest.net",
+    code:"",
+    productTypes:[]
+  }
+
+  constructor () {
+    super()
+    this.use('requestfix')
+  }
+
+  onLaunch() {
+    // this.testAsync()
+  }
+
+  sleep (s) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('promise resolved')
+      }, s * 1000)
+    })
+  }
+
+  async testAsync () {
+    const data = await this.sleep(3)
+    console.log(data)
+  }
+
+  
+  saveProductTypes(list){
+    this.globalData.productTypes = list;
+  }
+
+
+
+  login(userinfo){
+      console.log(userinfo)
+      var encrypted_data = userinfo.encryptedData;
+      var iv = userinfo.iv;
+      console.log(userinfo)
+      var code = this.globalData.code;
+
+      let url = this.globalData.server + '/api/users/oauth2/wechat/weapp/login.json';
+      url = url + '?code=' + encodeURIComponent(code) + '&encrypted_data=' + encodeURIComponent(encrypted_data) + '&iv=' + encodeURIComponent(iv);
+      wepy.request({
+        url: url,
+        data: {
+        },
+        method: "POST",
+        success: resps => {
+          console.log(resps)
+          this.globalData.token = resps.data.token;
+          this.globalData.userInfo = resps.data.user; 
+          this.setLocalStorage('userInfo',resps.data.user);
+          this.setLocalStorage('token',resps.data.token);
+          wepy.navigateTo({
+            url: 'index'
+          })
+        }
+      })
+
+
+      
+  }
+  updateUserInfo(user){
+    this.globalData.userInfo = user; 
+    this.setLocalStorage('userInfo',user);
+  }
+  getLoginCode(){
+    wepy.login({
+        success: res => {
+          var code = res.code;
+          console.log(res);
+          this.globalData.code = code;
+        }
+      })
+  }
+
+  checkLocalData(cb){
+    var token = this.getLocalStorage('token');
+    console.log(token)
+
+
+    if(token){
+      this.globalData.token = token;
+      var userInfo = this.getLocalStorage('userInfo');
+      this.globalData.userInfo = userInfo;
+      console.log(userInfo);
+      cb && cb();
+    }else{
+      this.getLoginCode();
+      wepy.navigateTo({
+        url: 'auth'
+      })
+    }
+  }
+  setLocalStorage(key,val){
+    try {
+        wepy.setStorageSync(key, val)
+    } catch (e) {    
+    }
+  }
+  getLocalStorage(key){
+    try {
+      var value = wepy.getStorageSync(key)
+      if (value) {
+          // Do something with return value
+          return value;
+      }
+    } catch (e) {
+      // Do something when catch error
+    }
+  }
+  getUserInfo(cb) {
+    const that = this
+    if (this.globalData.userInfo) {
+      return this.globalData.userInfo
+    }
+    wepy.getUserInfo({
+      success (res) {
+        console.log(res)
+        that.globalData.userInfo = res.userInfo
+        cb && cb(res.userInfo)
+      }
+    })
+  }
+}
+</script>

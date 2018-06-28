@@ -1,0 +1,280 @@
+<template>
+  <view class="page_container">
+    <view class="page_wrapper">
+      <repeat for="{{select}}" index="index" key="index" item="item">
+        <view class="group">
+          <view class="wrapper">
+            <view class="image_box" v-if="item.cover">
+              <image src="{{item.cover}}" />
+            </view>
+            <view class="title">
+              <view class="icon"></view>
+              {{item.name}}
+            </view>
+            <view class="content">
+              <repeat for="{{item.t_content}}" index="index" key="index" item="content">
+                <view wx:if="{{content.type == 'image' }}" class="images">
+                  <image src="{{content.url}}" ></image>
+                </view>
+                <view wx:if="{{content.type == 'text'}}" class="summary">
+                  {{content.summary}}
+                </view>
+              </repeat>
+            </view>
+          </view>
+          <view class="operate" bindtap="goDelete" data-index="{{index}}">删除</view>
+        </view>
+      </repeat>
+      <view class="add_group_wrapper">
+        <picker bindchange="bindPickerChange" value="{{index}}" range="{{current.productChild}}" range-key="name">
+          <view class="picker">
+            <view class="add_group">
+              <image src="../images/add_group.png" />添加产品
+            </view>
+          </view>
+        </picker>
+
+      </view>
+    </view>
+
+    <view class="page_operate">
+      <view class="btn" bindtap="submit">保存</view>
+    </view>
+
+
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '产品选择'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      current:null,
+      select:[],
+      t_select:[]
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      bindPickerChange(e){
+        var index = e.detail.value;
+        var uuid = this.current.productChild[index].uuid;
+        var exist = false;
+        for(var items of this.select){
+          if(items.uuid == uuid){
+            exist = true;
+          }
+        }
+        if(!exist){
+          var product = this.current.productChild[index];
+          product.t_content = JSON.parse(product.content);
+          this.select.push(product);
+          this.$apply();
+        }
+        
+      },
+      goDelete(e){
+        var index = e.target.dataset.index;
+        this.select.splice(index,1)
+      },
+      submit(){
+        let adds = [],dels = [];
+        var oldMembers = this.t_select || [];
+        dels = this.onSame(this.select,oldMembers);
+        adds = this.onSame(oldMembers,this.select);
+
+        this.relateProduct({adds,dels},() => {
+          this.t_select = JSON.parse(JSON.stringify(this.select))
+          wepy.navigateBack({
+            delta: 1
+          })
+        })
+      }
+    }
+
+    onSame(array1,array2){//比较两个数组变化
+      var result = [],resultObj=[];
+      for(var i = 0; i < array2.length; i++){
+          var uuid2 = array2[i].uuid;
+          var isExist = false;
+          for(var j = 0; j < array1.length; j++){
+              var uuid1 = array1[j].uuid;
+              if(uuid1 == uuid2){
+                isExist = true;
+                  break;
+              }
+          }
+          if(!isExist){
+              result.push(uuid2);
+              resultObj.push(array2[i]);
+          }
+      }
+      return resultObj;
+    }
+
+
+    events = {
+      
+    }
+
+    onLoad(option) {
+      this.$parent.checkLocalData(() => {
+        var type_id = option.id;
+        var productTypes = this.$parent.globalData.productTypes;
+        console.log(productTypes)
+        var select = [];
+        for(var items of productTypes){
+          if(items.uuid == type_id){
+            this.current = items;
+            for(var product of items.productChild){
+              if(product.checked){
+                select.push(product)
+              }
+            }
+          }
+        }
+        this.t_select = JSON.parse(JSON.stringify(select));
+        this.select = select;
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+  .page_container{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .page_wrapper{
+      flex-grow: 1;
+      overflow: auto;
+      .add_group_wrapper{
+        padding: 0 30rpx;
+        margin-top: 35rpx;
+        .add_group{
+          height: 70rpx;
+          line-height: 70rpx;
+          font-size: 30rpx;
+          color: #666666;
+          text-align: center;
+          background: #dbdbdb;
+          border-radius: 4rpx;
+          image{
+            width: 20rpx;
+            height: 20rpx;
+            vertical-align: middle;
+            margin-top: -7rpx;
+            margin-right: 6rpx;
+          }
+        }
+      }
+      
+    }
+    .page_operate{
+      padding: 24rpx 42rpx;
+      height: 80rpx;
+      line-height: 80rpx;
+      border-top: 1rpx solid #e7e7e7;
+
+      .btn{
+        width: 100%;
+        height: 100%;
+        background: #686a7e;
+        color: #fff;
+        font-size: 30rpx;
+        text-align: center;
+        border-radius: 8rpx;
+      }
+    }
+    .group{
+      background: #fff;
+      margin-bottom: 10rpx;
+      .title{
+        font-size: 30rpx;
+        color: #666666;
+        padding: 20rpx 0;
+
+        .icon{
+          width: 12rpx;
+          height: 30rpx;
+          border-radius: 5rpx;
+          background: #3e4057;
+          float: left;
+          margin-right: 12rpx;
+          margin-top: 4rpx;
+        }
+      }
+
+      .wrapper{
+        padding: 24rpx;
+        box-sizing: border-box;
+        margin-bottom: 30rpx;
+        .image_box{
+          image{
+            width: 100%;
+            max-height: 160rpx;
+          }
+        }
+        .content{
+          font-size: 24rpx;
+          color: #888888;
+          padding: 0 10rpx 0 48rpx;
+          .images{
+            margin-bottom: 10rpx;
+            image{
+              width: 100%;
+              max-height: 160rpx;
+            }
+          }
+          .summary{
+            margin-bottom: 10rpx;
+          }
+        }
+
+
+        
+      }
+
+      .operate{
+        height: 80rpx;
+        line-height: 80rpx;
+        text-align: center;
+        font-size: 30rpx;
+        color: #666666;
+        border-top: 1rpx solid #e7e7e7;
+
+      }
+
+
+
+    }
+
+
+
+  }
+</style>
+
+
+

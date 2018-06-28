@@ -1,0 +1,67 @@
+<template>
+  <view class="auth_login">
+      <button class='hiddenbtn' bindgetuserinfo='login' open-type='getUserInfo' bindtap='canILogin'>授权登录</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '授权登录'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+   
+    }
+    
+
+
+    computed = {
+      
+    }
+
+    methods = {
+      canILogin(){
+        if(!wx.canIUse('button.open-type.getUserInfo')){
+          wx.showModal({
+            title: '微信版本太旧',
+            content: '使用旧版本微信无法登录，请升级您的微信版本',
+          })
+        }
+      },
+      login(userinfo){
+        console.log(userinfo)
+        this.$parent.login(userinfo.detail)
+      }
+    }
+
+    events = {
+      
+    }
+
+    onLoad() {
+      
+    }
+  }
+</script>
+
+<style lang="less">
+</style>
+
+
+

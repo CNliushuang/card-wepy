@@ -1,0 +1,207 @@
+<template>
+  <view class="series_container">
+    <view class="series_wrapper">
+      <view class="title">
+        <view class="icon"></view>
+        BMW 7系
+      </view>
+      <view class="content">
+        <view class="items">
+          宝马7系是宝马公司顶级的豪华轿车系列，车身形式为4门轿车，驱动形式为前置后驱。宝马7系是宝马汽车的旗舰车型，而且只有轿车形式。只在德国本土生产，生产商为BMW，在1977年取代了上代车型 BMW New Six。
+        </view>
+        <view class="items">
+          中国已成为宝马7系在全球的第二大市场。宝马7系拥有众多最先进和最精良的技术装备，自1977年第一代推出以来，每一次更新换代都是超越完美的进化，为设计、动力和创新建立了新标准，将纯粹的乐趣
+        </view>
+      </view>
+    </view>
+    <view class="model_list">
+      <view class="items" @tap="viewModelDetail">
+        <view class="images">
+          <image src="../images/car.png" />
+        </view>
+        <view class="view_detail">
+          宝马760<view class="icon"><image src="../images/triangle.png"/></view>
+        </view>
+      </view>
+     <view class="items">
+        <view class="images">
+          <image src="../images/car.png" />
+        </view>
+        <view class="view_detail">
+          宝马761<view class="icon"><image src="../images/triangle.png"/></view>
+        </view>
+      </view>
+      <view class="items">
+        <view class="images">
+          <image src="../images/car.png" />
+        </view>
+        <view class="view_detail">
+          宝马762<view class="icon"><image src="../images/triangle.png"/></view>
+        </view>
+      </view>
+      <view class="items">
+        <view class="images">
+          <image src="../images/car.png" />
+        </view>
+        <view class="view_detail">
+          宝马762<view class="icon"><image src="../images/triangle.png"/></view>
+        </view>
+      </view>
+      <view class="items">
+        <view class="images">
+          <image src="../images/car.png" />
+        </view>
+        <view class="view_detail">
+          宝马762<view class="icon"><image src="../images/triangle.png"/></view>
+        </view>
+      </view>
+      <view class="items">
+        <view class="images">
+          <image src="../images/car.png" />
+        </view>
+        <view class="view_detail">
+          宝马762<view class="icon"><image src="../images/triangle.png"/></view>
+        </view>
+      </view>
+
+
+
+
+    </view>
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '车系详情'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      viewModelDetail(){
+        wepy.navigateTo({
+          url: 'model'
+        })
+      }
+    }
+
+    events = {
+      
+    }
+
+    onLoad() {
+      
+    }
+  }
+</script>
+
+<style lang="less">
+  .series_container{
+    height: 100%;
+    .series_wrapper{
+      background: #fff;
+      padding: 40rpx 30rpx 40rpx 30rpx;
+
+    }
+    .title{
+      font-size: 30rpx;
+      color: #666666;
+      border-bottom: 1rpx solid #e7e7e7;
+      padding-bottom: 20rpx;
+
+      .icon{
+        width: 12rpx;
+        height: 30rpx;
+        border-radius: 5rpx;
+        background: #3e4057;
+        float: left;
+        margin-right: 12rpx;
+        margin-top: 4rpx;
+      }
+    }
+    .content{
+      font-size: 24rpx;
+      color: #888888;
+      line-height: 38rpx;
+
+      .items{
+        text-indent: 48rpx;
+        margin-top: 15rpx;
+      }
+    }
+
+    .model_list{
+      padding: 0 25rpx;
+      .items{
+        width: 48%;
+        float: left;
+        margin-right: 4%;
+        height: 300rpx;
+        background: #fff;
+        border-radius: 8rpx;
+        margin-top: 20rpx;
+        &:nth-child(even){
+          margin-right: 0;
+        }
+
+        .images{
+          height: 200rpx;
+          padding: 15rpx;
+          text-align: center;
+          border-bottom: 1rpx solid #e7e7e7;
+          image{
+            width: 100%;
+            height: 170rpx;
+          }
+        }
+        .view_detail{
+          padding: 15rpx;
+          box-sizing: border-box;
+          font-size: 35rpx;
+          color: #424242;
+          position: relative;
+          .icon{
+            position: absolute;
+            right: 15rpx;
+            top: 15rpx;
+            image{
+              width: 35rpx;
+              height: 35rpx;
+            }
+          }
+        }
+
+
+
+      }
+    }
+
+
+  }
+</style>
+
+
+

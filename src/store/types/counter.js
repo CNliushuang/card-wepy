@@ -1,0 +1,13 @@
+export const INCREMENT = 'INCREMENT'
+
+export const DECREMENT = 'DECREMENT'
+
+export const ASYNC_INCREMENT = 'ASYNC_INCREMENT'
+
+
+
+
+export const SET_PRODUCT_TYPES = 'SET_PRODUCT_TYPES'
+export const SET_CHECKED_TYPE = 'SET_CHECKED_TYPE'
+
+

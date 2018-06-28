@@ -1,0 +1,503 @@
+<template>
+  <view class="page_container">
+    <view class="group">
+      <view class="title">
+        <view class="icon"></view>
+        上传轮播图片（最多5张）
+      </view>
+      <view class="summary">上传630*1360的图片最佳，格式限定为jpg、png</view>
+      <view  class="images clearfix">
+        <repeat for="{{userInfo.banners}}" key="index" index="index" item="item">
+          <image  src="{{item.url}}" ></image>
+        </repeat>
+        <view class="add_images" bindtap="goUpload">
+          <image src="../images/add_image.png" ></image>
+        </view>
+      </view>
+    </view>
+    <view class="group">
+      <view class="title">
+        <view class="icon"></view>
+        编辑个人信息
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          <view class="icon"></view>
+          姓名（必填）
+        </view>
+        <view class="content">
+          <input value="{{userInfo && userInfo.nickname}}" bindinput='changeInfo' data-type="nickname" placeholder="请填写您的姓名"/>
+        </view>
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          <view class="icon"></view>
+          头像（必填）
+        </view>
+        <view class="content">
+          <view class="avatar_box clearfix">
+            <image src="{{userInfo && userInfo.avatarUrl}}" ></image>
+            <view class="change_btn" bindtap="goChangeAvatar">重新上传</view>
+          </view>
+        </view>
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          公司
+        </view>
+        <view class="content">
+          <input value="{{userInfo && userInfo.compName}}" bindinput='changeInfo' data-type="compName" placeholder="请填写您的公司名称"/>
+        </view>
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          职务
+        </view>
+        <view class="content">
+          <input value="{{userInfo && userInfo.jobName}}" bindinput='changeInfo' data-type="jobName" placeholder="请填写您的职务"/>
+        </view>
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          <view class="icon"></view>
+          电话
+        </view>
+        <view class="content">
+          <input value="{{userInfo && userInfo.mobile}}" bindinput='changeInfo' data-type="mobile" placeholder="请填写您的电话"/>
+        </view>
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          公众号
+        </view>
+        <view class="content">
+          <input value="{{userInfo && userInfo.wechatService}}" bindinput='changeInfo' data-type="wechatService" placeholder="请填写您的公众号"/>
+        </view>
+      </view>
+      <view class="edit_items">
+        <view class="name">
+          公告内容编辑
+          <view class="help">什么是公告<image src="../images/help.png">></image></view>
+        </view>
+        <view class="content" bindtap="goEditPage('editPost')">
+          <textarea bindblur="" placeholder="" />
+        </view>
+      </view>
+
+    </view>
+
+    <view class="group">
+      <view class="tabs">
+        <view class="tabs_items" bindtap="goEditPage('editResume')">
+          <view class="icon">
+            <image src="../images/tab_resume.png" ></image>
+          </view>
+          <view class="tabs_name">个人资历</view>
+        </view>
+        <view class="tabs_items" bindtap="goEditPage('editCompany')">
+          <view class="icon">
+            <image src="../images/tab_company.png" ></image>
+          </view>
+          <view class="tabs_name">企业简介</view>
+        </view>
+        <view class="tabs_items">
+          <view class="icon">
+            <image src="../images/tab_address.png" ></image>
+          </view>
+          <view class="tabs_name">地址</view>
+        </view>
+        <view class="tabs_items" bindtap="goEditPage('productList')">
+          <view class="icon">
+            <image src="../images/tab_product.png" ></image>
+          </view>
+          <view class="tabs_name">产品选择</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="group">
+      <view class="submit" bindtap="submit">保存</view>
+    </view>
+
+
+
+
+
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import qiniuUploader from "../utils/qiniuUploader"
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '编辑主页'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      userInfo:null,
+      count:5,//限制上传图片数量
+      loading:false,
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      changeInfo(e){
+        var s_type = e.target.dataset.type;
+        var val = e.detail.value;
+        this.userInfo[s_type] = val;
+        // console.log(this.userInfo);
+      },
+      goEditPage(page){
+        wepy.navigateTo({
+          url: page
+        })
+      },
+      goUpload(e) {
+        var that = this;
+        var files = [];
+        var banners = [];
+        console.log(e.target);
+
+        // 选择图片
+        wx.chooseImage({
+          count: this.count || 1,
+          success: (res) => {
+            console.log(res);
+            for (var items of res.tempFiles) {
+              items.expand = items.path.replace(/.+\./, '');
+              items.name = items.path.replace(/.+\//, '');
+              items.url = items.path;
+              files.push(items);
+            }
+
+            /*挨个上传至七牛*/
+            for (var i = 0; i < files.length; i++) {
+              if (!files[i].uuid) {
+                this.startUpload(files[i],banners);
+              }
+            }
+
+          }
+        })
+      },
+      goChangeAvatar(e){
+        var that = this;
+        var files = [];
+        console.log(e.target);
+
+        // 选择图片
+        wx.chooseImage({
+          count: 1,
+          success: (res) => {
+            console.log(res);
+            for (var items of res.tempFiles) {
+              items.expand = items.path.replace(/.+\./, '');
+              items.name = items.path.replace(/.+\//, '');
+              items.url = items.path;
+              files.push(items);
+            }
+
+            /*挨个上传至七牛*/
+            for (var i = 0; i < files.length; i++) {
+              if (!files[i].uuid) {
+                this.startUpload(files[i],null);
+              }
+            }
+
+          }
+        })
+      },
+     
+      submit(){
+        var url = this.server + '/api/users/'+this.userInfo.uuid+'.json';
+        var params = {
+          nickname:this.userInfo.nickname,
+          compName:this.userInfo.compName || '',
+          jobName:this.userInfo.jobName || '',
+          mobile:this.userInfo.mobile || '',
+          wechatService:this.userInfo.wechatService || '',
+          avatarUrl:this.userInfo.avatarUrl || '',
+          _method:"put"
+        }
+
+        let banners = [];
+        for(var items of this.userInfo.banners){
+          var temp = {
+            uuid:items.uuid
+          }
+          banners.push(temp);
+        }
+        params.banners = banners;
+
+        console.log(params)
+        this.httpAgent(url,'PUT',params,(resp) => {
+          this.$parent.updateUserInfo(resp.user);
+        });
+      }
+    }
+    startUpload(file,banners) {
+      console.log("upload#@!");
+      var that = this;
+      // 交给七牛上传
+      qiniuUploader.upload(file.url, (res) => {
+        // 每个文件上传成功后,处理相关的事情
+        // 其中 info 是文件上传成功后，服务端返回的json，形式如
+        // {
+        //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
+        //    "key": "gogopher.jpg"
+        //  }
+        // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
+
+        console.log(res);
+        if(banners){
+          banners.push(res);
+          that.userInfo.banners = banners;
+        }else{
+          this.userInfo.avatarUrl = res.url;
+        }
+        
+        that.$apply()
+        console.log(that.userInfo)
+        
+      }, (error) => {
+        console.log('error: ' + error);
+      }, {
+          region: 'ECN',
+          times: new Date().getTime(),
+          domain: 'qiniu-file01.yugusoft.com', // // bucket 域名，下载资源时用到。如果设置，会在 success callback 的 res 参数加上可以直接使用的 ImageURL 字段。否则需要自己拼接
+          // key: 'customFileName.jpg', // [非必须]自定义文件 key。如果不设置，默认为使用微信小程序 API 的临时文件名
+          // 以下方法三选一即可，优先级为：uptoken > uptokenURL > uptokenFunc
+          // uptoken: '[yourTokenString]', // 由其他程序生成七牛 uptoken
+          // uptokenURL: 'UpTokenURL.com/uptoken', // 从指定 url 通过 HTTP GET 获取 uptoken，返回的格式必须是 json 且包含 uptoken 字段，例如： {"uptoken": "[yourTokenString]"}
+          uptokenFunc: function (cb) {
+            console.log("abc#####")
+
+            return new Promise((resolve, reject) => {
+              const expand = file.expand;
+              const name = file.name;
+              let url = that.server + '/api/files/storage/ticket/unlogin.json';
+              url = url + '?name='+file.name+'&type=0'
+              const params = {
+              }
+              that.httpAgent(url, 'GET', params, (data) => {
+                // console.log(data.ticket);
+                cb && cb(data.ticket);
+              })
+            })
+          }
+        }
+      );
+    }
+    events = {
+      
+    }
+
+    onLoad() {
+      this.$parent.checkLocalData(() => {
+        var userInfo = this.$parent.globalData.userInfo;
+        this.userInfo = JSON.parse(JSON.stringify(userInfo));
+        this.$apply()
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+  .page_container{
+    height: 100%;
+    background: #fff;
+    padding: 0 30rpx;
+    overflow: auto;
+    .group{
+      margin-bottom: 10rpx;
+       .title{
+        font-size: 30rpx;
+        color: #666666;
+        padding: 20rpx 0;
+        .icon{
+          width: 12rpx;
+          height: 30rpx;
+          border-radius: 5rpx;
+          background: #3e4057;
+          float: left;
+          margin-right: 12rpx;
+          margin-top: 4rpx;
+        }
+      }
+      .summary{
+        font-size: 24rpx;
+        color: #888888;
+      }
+
+      .images{
+        margin-top: 24rpx;
+        image{
+          width: 140rpx;
+          height: 140rpx;
+          float: left;
+          margin-right: 16rpx;
+          margin-bottom: 10rpx;
+        }
+        .add_images{
+          width: 140rpx;
+          height: 140rpx;
+          background: #e7e7e7;
+          float: left;
+          position: relative;
+          margin-bottom: 10rpx;
+
+          image{
+            width: 60rpx;
+            height: 60rpx;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin: -30rpx 0 0 -30rpx;
+          }
+        }
+      }
+      .edit_items{
+        .name{
+          font-size: 28rpx;
+          color: #888888;
+          padding: 20rpx 0;
+          .icon{
+            width: 18rpx;
+            height: 18rpx;
+            border-radius: 100%;
+            background: #ff2b2b;
+            float: left;
+            margin-top: 10rpx;
+            margin-right: 6rpx;
+          }
+
+          .help{
+            float: right;;
+            font-size: 28rpx;
+            image{
+              width: 30rpx;
+              height: 30rpx;
+              margin-left: 6rpx;
+              vertical-align:middle;
+              margin-top: -8rpx;
+            }
+          }
+
+
+
+        }
+        .content{
+          input{
+            font-size: 24rpx;
+            border-bottom: 2rpx solid #c7c9ca;
+          }
+
+          textarea{
+            width: 100%;
+            box-sizing: border-box;
+            border:2rpx solid #c7c9ca;
+            height: 200rpx;
+          }
+
+
+
+          .avatar_box{
+            image{
+              width: 160rpx;
+              height: 160rpx;
+              border-radius: 100%;
+              float: left;
+            }
+            .change_btn{
+              background: #bababa;
+              color: #fff;
+              font-size: 28rpx;
+              text-align: center;
+              height: 70rpx;
+              line-height: 70rpx;
+              float: left;
+              padding: 0 30rpx;
+              border-radius: 6rpx;
+              margin: 40rpx 0 0 20rpx;
+            }
+          }
+
+
+
+        }
+
+
+      }
+
+      .tabs{
+        display: flex;
+        flex-direction: row;
+        margin-top: 40rpx;
+        .tabs_items{
+          flex:1;
+          .icon{
+            width: 100rpx;
+            height: 100rpx;
+            border:1rpx solid #6d6f82;
+            border-radius: 100%;
+            background: #f9f9f9;
+            margin: 0 auto;
+            text-align: center;
+            image{
+              width: 70rpx;
+              height: 70rpx;
+              margin-top:15rpx; 
+            }
+          }
+        }
+        .tabs_name{
+          margin-top: 20rpx;
+          font-size: 28rpx;
+          color: #444444;
+          text-align: center;
+        }
+      }
+
+      .submit{
+        height: 90rpx;
+        text-align: center;
+        line-height: 90rpx;
+        color: #fff;
+        font-size: 30rpx;
+        background: #686a7e;
+        border-radius: 10rpx;
+        margin-top: 60rpx;
+      }
+
+
+
+
+
+
+    }
+
+
+  }
+</style>
+
+
+

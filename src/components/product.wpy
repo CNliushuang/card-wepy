@@ -1,0 +1,57 @@
+<template>
+  <view class="cars_list clearfix" bindtap="goEditProduct" data-index="{{index}}">
+    <repeat for="{{item.productChild}}" index="c_index" key="c_index" item="product">
+      <view class="items">
+        <view class="images"><image src="{{product.cover}}" /></view>
+        <view class="check">
+          <icon wx:if="{{product.checked}}" type="success_no_circle" size="20"/>
+        </view>
+        <view class="name">{{product.name}}</view>
+      </view>
+    </repeat>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+
+  export default class Panel extends wepy.component {
+    props = {
+      item:Object
+    }
+    methods = {
+      goEditProduct(){
+        wepy.navigateTo({
+          url: 'selectProduct?id=' + this.item.uuid
+        })
+      }
+    }
+  }
+</script>
+
+<style lang="less">
+  .cars_list{
+    width: 100%;
+    .items{
+      float: left;
+      width: 33%;
+      margin-bottom: 20rpx;
+      margin-right: 10rpx;
+      box-sizing: border-box;
+      .images{
+        image{
+          width: 100%;
+          height: 80rpx;
+        }
+      }
+      .check{
+        text-align: center;
+        height: 46rpx;
+      }
+      .name{
+        font-size: 24rpx;
+        color: #888888;
+        text-align: center;
+      }
+    }
+  }
+</style>

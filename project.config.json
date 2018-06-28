@@ -1,0 +1,15 @@
+{
+	"description": "card wepy",
+	"setting": {
+		"urlCheck": true,
+		"es6": false,
+		"postcss": false,
+		"minified": false,
+		"newFeature": true
+	},
+	"compileType": "miniprogram",
+	"appid": "wx33b147cc88ff6203",
+	"projectname": "card-wepy",
+	"miniprogramRoot": "./dist",
+	"condition": {}
+}

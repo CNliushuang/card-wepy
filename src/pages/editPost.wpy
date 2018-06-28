@@ -1,0 +1,301 @@
+<template>
+  <view class="page_container">
+    <view class="page_wrapper">
+      <view class="group">
+        <view class="title">
+          <view class="icon"></view>
+          <view class="content">
+            填写标题
+          </view>
+        </view>
+        <view class="edit_title">
+            <input placeholder="请填写标题，最多不超过48个字" bindinput="changeName" value="{{detail.name}}"/>
+        </view>
+        <view class="wrapper">
+          <repeat for="{{detail.content}}" index="index" key="index" item="content">
+            <view wx:if="{{content.type == 'image' }}" class="image_box">
+                <image src="{{content.url}}" ></image>
+              </view>
+              <view wx:if="{{content.type == 'text'}}" class="summary">
+                <textarea placeholder="输入文本" auto-height="true" bindinput="changeSummary" data-index="{{index}}"  value="{{content.summary}}"></textarea>
+              </view>
+            </repeat>
+          </repeat>
+          <view class="operate">
+            <view class="add_image items" bindtap="goUpload">
+              <image src="../images/edit_add.png" ></image>
+              此行插入图片
+            </view>
+            <view class="add_summary items" bindtap="goAddSummary">
+              <image src="../images/edit_add.png" ></image>
+              此行插入文本
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="help" bindtap="viewHelp">看看怎么写 查看示例<image src="../images/post_help.png" /></view>
+    </view>
+    <view class="page_operate">
+      <view class="btn" bindtap="submit">保存</view>
+    </view>
+
+
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '编辑公告'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      detail:{
+        name:"",
+        content:[]
+      },
+      userInfo:null
+
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      viewHelp(){
+        wepy.navigateTo({
+          url: 'example'
+        })
+      },
+      submit(){
+
+        console.log(this.detail)
+
+
+        if(!this.detail.name){
+          wepy.showToast({
+            title: '填写信息不全',
+            icon:"none",
+            duration: 2000
+          })
+          return false;
+        }
+        var params = {
+          notice:JSON.stringify(this.detail),
+          uuid:this.userInfo.uuid
+        }
+        this.modifyUserInfo(params,(resp) => {
+          this.$parent.updateUserInfo(resp.user);
+        })
+      },
+      changeName(e){
+        var val = e.detail.value;
+        this.detail.name = val;
+      },
+      changeSummary(e){
+        // console.log(e);
+        var index = e.target.dataset.index;
+        var val = e.detail.value;
+        // console.log(val);
+        this.detail.content[index].summary = val;
+        this.$apply();
+
+
+      },
+      goAddSummary(e){
+        var temp = {
+          type:"text",
+          summary:""
+        }
+        this.detail.content.push(temp);
+        this.$apply();
+      },
+      goUpload(e){
+        var that = this;
+        var files = [];
+        // 选择图片
+        wx.chooseImage({
+          count: 1,
+          success: (res) => {
+            console.log(res);
+            for (var items of res.tempFiles) {
+              items.expand = items.path.replace(/.+\./, '');
+              items.name = items.path.replace(/.+\//, '');
+              items.url = items.path;
+              files.push(items);
+            }
+
+            /*挨个上传至七牛*/
+            for (var i = 0; i < files.length; i++) {
+              if (!files[i].uuid) {
+                this.startUpload(files[i],(res) => {
+                  var temp = {
+                    type:"image",
+                    url:res.url
+                  }
+                  that.detail.content.push(temp)
+                  this.$apply();
+                });
+              }
+            }
+
+          }
+        })
+      }
+    }
+
+    events = {
+      
+    }
+
+    onLoad() {
+      this.$parent.checkLocalData(() => {
+        var userInfo = this.$parent.globalData.userInfo;
+        this.userInfo = userInfo;
+        if(userInfo.notice){
+          this.detail = JSON.parse(userInfo.notice);
+        }else{
+          this.detail = {
+            name:"",
+            content:[]
+          };
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+  .page_container{
+    height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    .page_wrapper{
+      padding: 0 30rpx;
+      flex-grow: 1;
+      overflow: auto;
+    }
+    .page_operate{
+      padding: 24rpx 42rpx;
+      height: 80rpx;
+      line-height: 80rpx;
+      border-top: 1rpx solid #e7e7e7;
+      .btn{
+        width: 100%;
+        height: 100%;
+        background: #686a7e;
+        color: #fff;
+        font-size: 30rpx;
+        text-align: center;
+        border-radius: 8rpx;
+      }
+    }
+    .group{
+      padding-bottom: 30rpx;
+
+      .title{
+        font-size: 30rpx;
+        color: #666666;
+        padding: 20rpx 0;
+
+        .icon{
+          width: 12rpx;
+          height: 30rpx;
+          border-radius: 5rpx;
+          background: #3e4057;
+          float: left;
+          margin-right: 12rpx;
+          margin-top: 6rpx;
+        }
+        .content{
+          margin-left: 18rpx;
+          padding-bottom: 6rpx;
+        }
+      }
+      .edit_title{
+        font-size: 30rpx;
+        color: #666666;
+        border-bottom: 1rpx solid #e7e7e7;
+      }
+
+      .wrapper{
+        border: 1rpx solid #e7e7e7;
+        padding: 24rpx;
+        box-sizing: border-box;
+        margin-top: 30rpx;
+        .image_box{
+          image{
+            width: 100%;
+            max-height: 160rpx;
+          }
+        }
+        .summary{
+          textarea{
+            font-size: 24rpx;
+            color: #888888;
+          }
+        }
+
+        .operate{
+          width: 85%;
+          height: 60rpx;
+          line-height: 60rpx;
+          display: flex;
+          flex-direction: row;
+          background: #f1f1f1;
+          margin: 0 auto;
+          margin-top: 36rpx;
+          .items{
+            flex: 1;
+            font-size: 30rpx;
+            padding:0 20rpx;
+            box-sizing: border-box;
+            image{
+              width: 40rpx;
+              height: 40rpx;
+              vertical-align: middle;
+              margin-top: -7rpx;
+            }
+          }
+        }
+      }
+    }
+    .help{
+      font-size: 30rpx;
+      color: #888888;
+      text-align: center;
+      image{
+        width: 35rpx;
+        height: 35rpx;
+        display: inline-block;
+        margin-left: 6rpx;
+        vertical-align:middle;
+        margin-top:-9rpx;
+      }
+    }
+
+
+  }
+</style>
+
+
+

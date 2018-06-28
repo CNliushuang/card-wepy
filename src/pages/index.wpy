@@ -1,0 +1,378 @@
+<template>
+  <view class="container">
+    <view class="wrapper">
+      <view class="edit_box" bindtap="goEdit">编辑内容</view>
+      <view class="swiper">
+        <swiper indicator-dots="{{indicatorDots}}"
+          autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}">
+          <repeat for="{{imgUrls}}" key="index">
+            <swiper-item>
+              <image src="{{item}}" class="slide-image"></image>
+            </swiper-item>
+          </repeat>
+        </swiper>
+
+        <view class="user_info">
+          <view class="avatar">
+            <image src="{{userInfo.avatarUrl}}"></image>
+          </view>
+          <view class="info">
+            <view class="name">{{userInfo.nickname}}</view>
+            <view class="address">北京市朝阳区小营路25号</view>
+          </view>
+        </view>
+
+
+      </view>
+      <view class="tabs">
+        <view class="items resume" bindtap="navigateTo('resume')">
+          <view class="icon">
+            <image src="../images/resume.png" ></image>
+          </view>
+          <view class="name">个人履历</view>
+          <view class="name_en">Personal info</view>
+        </view>
+        <view class="items mobile">
+          <view class="icon">
+            <image src="../images/mobile.png" ></image>
+          </view>
+          <view class="name">电话</view>
+          <view class="name_en">Mobile phone</view>
+        </view>
+        <view class="items wechat_public">
+          <view class="icon">
+            <image src="../images/wechat_public.png" ></image>
+          </view>
+          <view class="name">公众号</view>
+          <view class="name_en">WeChat public</view>
+        </view>
+        <view class="items introduction">
+          <view class="icon">
+            <image src="../images/introduction.png" ></image>
+          </view>
+          <view class="name">品牌介绍</view>
+          <view class="name_en">Brand detail</view>
+        </view>
+      </view>
+      <view class="maps">
+        <view class="btn"><image src="../images/maps.png" ></image>导航去店里</view>
+      </view>
+    </view>
+
+    <view class="product_list">
+      <repeat for="{{typesList}}" index="index" key="index" item="item">
+        <view class="items" @tap="viewSeriesDetail">
+          <view class="images">
+            <image src="{{item.cover}}" ></image>
+          </view>
+          <view class="name">{{item.name}}</view>
+          <view class="content">
+            {{item.content}}
+          </view>
+        </view>
+      </repeat>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '个人电子名片'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      imgUrls: [],
+      indicatorDots: true,
+      autoplay: true,
+      interval: 5000,
+      duration: 1000,
+      userInfo:null,
+      typesList:[]
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      viewSeriesDetail(){
+        wepy.navigateTo({
+          url: 'series'
+        })
+      },
+      navigateTo(page){
+        wepy.navigateTo({
+          url: page
+        })
+      },
+      goEdit(){
+        wepy.navigateTo({
+          url: 'editHome'
+        })
+      },
+      makePhoneCall(){
+        if(this.userInfo.mobile){
+          wx.makePhoneCall({
+            phoneNumber: this.userInfo.mobile //仅为示例，并非真实的电话号码
+          })
+        }
+        
+      }
+      
+    }
+
+    events = {
+      
+    }
+
+    onLoad() {
+      this.$parent.checkLocalData(() => {
+        console.log("callback")
+        var userInfo = this.$parent.globalData.userInfo;
+        this.userInfo = userInfo;
+        console.log(userInfo)
+        if(this.userInfo.banners.length > 0){
+          var list = [];
+          for(var items of this.userInfo.banners){
+            list.push(items.url);
+          }
+          this.imgUrls = list;
+        }
+        this.getBrandList({},(data) => {
+          var brandId = data.list[0].uuid;
+          this.getRelateTypesList({brandId,parentId:'',user_id:this.userInfo.uuid},(resp) => {
+            this.typesList = resp.list;
+            this.$apply()
+            console.log(this.typesList)
+          })
+        })
+
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+  .container{
+    .wrapper{
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .edit_box{
+        color: #fff;
+        font-size: 32rpx;
+        width: 200rpx;
+        height: 70rpx;
+        line-height: 70rpx;
+        text-align: center;
+        z-index: 999;
+        background: #414550;
+        opacity: .5;
+        position: absolute;
+        right: 0;
+        top: 50rpx;
+        border-top-left-radius: 24rpx;
+        border-bottom-left-radius: 24rpx;
+      }
+
+      .swiper{
+        width: 100%;
+        flex-grow: 1;
+        height: 0;
+        position: relative;
+        swiper{
+          width: 100%;
+          height: 100%;
+        }
+        image{
+          width: 100%;
+          height: 100%;
+        }
+
+        .user_info{
+          position: absolute;
+          left: 36rpx;
+          bottom: -14rpx;
+          .avatar{
+            width: 140rpx;
+            height: 140rpx;
+            border-radius: 100%;
+            background: #4a4f53;
+            position: absolute;
+            left: 0;
+            bottom: -20rpx;
+            image{
+              width: 140rpx;
+              height: 140rpx;
+              border-radius: 100%;
+            }
+          }
+
+          .info{
+            width: 500rpx;
+            height: 100rpx;
+            background: #fff;
+            margin-left: 40rpx;
+            border-radius: 20rpx;
+            padding-left: 110rpx;
+            padding-right: 35rpx;
+            box-sizing: border-box;
+            padding-top: 10rpx;
+            padding-bottom: 10rpx;
+            box-shadow:0px 4px 9px #1f2029;
+            .name{
+              font-size: 32rpx;
+              color: #666666;
+              border-bottom: 1rpx solid #d3d3d3;
+              padding-bottom: 4rpx;
+              margin-bottom: 4rpx;
+            }
+            .address{
+              font-size: 26rpx;
+              color: #888888;
+            }
+          }
+
+
+        }
+
+
+
+
+      }
+
+      .tabs{
+        height: 200rpx;
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        .items{
+          flex:1;
+          text-align: center;
+          color: #fff;
+
+          .icon{
+            width: 65rpx;
+            height: 65rpx;
+            margin: 0 auto;
+            margin-top: 40rpx;
+            image{
+              width: 100%;
+              height: 100%;
+            }
+          }
+
+          .name{
+            font-size: 32rpx;
+            margin-top: 10rpx;
+          }
+          .name_en{
+            font-size: 21rpx;
+          }
+          &.resume{
+            background: #3e4057;
+          }
+          &.mobile{
+            background: #30313e;
+          }
+          &.wechat_public{
+            background: #373846;
+          }
+          &.introduction{
+            background: #2e2f3e;
+            .icon{
+              width: 130rpx;
+            }
+          }
+        }
+      }
+      .maps{
+        height: 180rpx;
+        background: #fff;
+        flex-shrink: 0;
+        padding: 0 80rpx;
+        .btn{
+          height: 100rpx;
+          line-height: 100rpx;
+          background: #3e4057;
+          color: #fff;
+          border-radius: 10rpx;
+          margin-top: 40rpx;
+          text-align: center;
+          image{
+            width: 50rpx;
+            height: 50rpx;
+            vertical-align: middle;
+            margin-top: -10rpx;
+            margin-right: 10rpx;
+          }
+        }
+      }
+
+
+    }
+
+    .product_list{
+      padding: 0 30rpx;
+      .items{
+        margin-top: 30rpx;
+        background: #fff;
+        padding: 30rpx 10rpx;
+        box-sizing: border-box;
+        .images{
+          max-height: 300rpx;
+          border-bottom: 1rpx solid #e7e7e7;
+          padding: 10rpx 0;
+          text-align: center;
+          image{
+            width: 100%;
+            height:300rpx;
+          }
+        }
+
+        .name{
+          font-size: 38rpx;
+          color: #424242;
+          margin: 10rpx 0;
+          padding: 0 30rpx;
+        }
+        .content{
+          font-size: 28rpx;
+          color: #888888;
+          text-indent: 60rpx;
+          padding: 0 30rpx;
+          line-height: 42rpx;
+        }
+
+
+
+      }
+    }
+
+
+
+
+  }
+</style>
+
+
+

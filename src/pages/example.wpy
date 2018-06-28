@@ -1,0 +1,215 @@
+<template>
+  <view class="series_container">
+    <view class="series_wrapper">
+      <view class="title">
+        <view class="icon"></view>
+        BMW 7系 760Li
+      </view>
+      <view class="title">
+        <view class="clearfix">
+          <view class="icon"></view>
+          车型售价 ￥650,000起
+        </view>
+        <view class="summary">
+          所示价格为建议零售价
+        </view>
+      </view>
+      <view class="content">
+        <view class="items">
+          宝马760Li是宝马7系中的一款集领袖气质、卓越创新和雍容华贵于一身的高端车型，拥有卓越的精准性和动力性能、出色的驾乘舒适性以及豪华先进的内部环境，在最佳驾驶体验方面充分体现了作为一款面向未来的顶级豪华轿车的领袖风范。BMW 760Li配备双涡轮增压V12发动机，最大输出功率400千瓦/544马力，峰值扭矩高达750牛米，搭载8速手自一体变速箱，从静止加速到100公里/时仅需4.4秒。BMW 760Li还提供了更加出色的燃油经济性，同时满足欧洲EU5的严格排放要求和美国ULEV II标准。
+        </view>
+      </view>
+      <swiper indicator-dots="{{indicatorDots}}"
+          autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}">
+          <repeat for="{{imgUrls}}" key="index">
+            <swiper-item>
+              <image src="{{item}}" class="slide-image"/>
+            </swiper-item>
+          </repeat>
+        </swiper>
+
+    </view>
+    <view class="promotions">
+      <view class="title">
+        <view class="icon"></view>
+        促销活动
+      </view>
+      <view class="images">
+        <image src="../images/promotions.png" />
+      </view>
+    </view>
+
+    <view class="contact">
+      <view class="btn">
+        <image src="../images/contact.png"/>
+        联系您的专职顾问张小龙
+      </view>
+    </view>
+
+
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+
+  @connect({
+    
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '公告位示例'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      imgUrls: [
+        'http://img06.tooopen.com/images/20160818/tooopen_sy_175833047715.jpg',
+        'http://img06.tooopen.com/images/20160818/tooopen_sy_175866434296.jpg',
+        'http://img06.tooopen.com/images/20160818/tooopen_sy_175833047715.jpg'
+      ],
+      indicatorDots: true,
+      autoplay: true,
+      interval: 5000,
+      duration: 1000
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      
+    }
+
+    events = {
+      
+    }
+
+    onLoad() {
+      
+    }
+  }
+</script>
+
+<style lang="less">
+  .series_container{
+    height: 100%;
+    .series_wrapper{
+      background: #fff;
+      padding: 20rpx 30rpx 40rpx 30rpx;
+
+    }
+    .title{
+      font-size: 30rpx;
+      color: #666666;
+      border-bottom: 1rpx solid #e7e7e7;
+      padding: 20rpx 0;
+
+      .icon{
+        width: 12rpx;
+        height: 30rpx;
+        border-radius: 5rpx;
+        background: #3e4057;
+        float: left;
+        margin-right: 12rpx;
+        margin-top: 4rpx;
+      }
+      .summary{
+        font-size: 24rpx;
+        color: #888888;
+        margin: 10rpx 0 0 24rpx;
+      }
+
+
+
+    }
+    .content{
+      font-size: 24rpx;
+      color: #888888;
+      line-height: 38rpx;
+
+      .items{
+        text-indent: 48rpx;
+        margin-top: 15rpx;
+      }
+    }
+
+    swiper{
+      width: 100%;
+      height: 360rpx;
+      margin-top: 30rpx;
+      image{
+        width: 100%;
+        height: 100%
+      }
+    }
+
+    .promotions{
+      background: #fff;
+      margin-top: 30rpx;
+      .title{
+        font-size: 30rpx;
+        color: #666666;
+        border-bottom: 1rpx solid #e7e7e7;
+        padding: 20rpx 30rpx;
+
+        .icon{
+          width: 12rpx;
+          height: 30rpx;
+          border-radius: 5rpx;
+          background: #4ba0ff;
+          float: left;
+          margin-right: 12rpx;
+          margin-top: 4rpx;
+        }
+
+      }
+
+      .images{
+        image{
+          width: 100%;
+          height: 400rpx;
+        }
+      }
+
+
+    }
+
+    .contact{
+      background: #fff;
+      padding: 30rpx;
+      margin-top: 30rpx;
+      .btn{
+        height: 100rpx;
+        line-height: 100rpx;
+        background: #3e4057;
+        color: #fff;
+        border-radius: 10rpx;
+        text-align: center;
+        image{
+          width: 50rpx;
+          height: 50rpx;
+          vertical-align: middle;
+          margin-top: -10rpx;
+          margin-right: 10rpx;
+        }
+      }
+    }
+
+
+  }
+</style>
+
+
+
