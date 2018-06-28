@@ -58,6 +58,7 @@
         <view class="btn"><image src="../images/maps.png" ></image>导航去店里</view>
       </view>
     </view>
+    
 
     <view class="product_list">
       <repeat for="{{typesList}}" index="index" key="index" item="item">
